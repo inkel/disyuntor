@@ -1,5 +1,7 @@
 # Simple Circuit Breaker Pattern in Ruby
 
+[![Join the chat at https://gitter.im/inkel/disyuntor](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/inkel/disyuntor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This gem implements a very simple class to deal with the Circuit Breaker Pattern as described by [Michael T. Nygard](http://www.michaelnygard.com/) in his amazing and highly recommended [Release It! - Design and Deploy Production-Ready Software](http://www.amazon.com/Release-It-Production-Ready-Pragmatic-Programmers/dp/0978739213).
 
 ## Usage
