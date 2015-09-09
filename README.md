@@ -28,7 +28,7 @@ If you want to use it as a [`Rack`](https://github.com/rack/rack) middleware, ad
 ```
 require "rack/disyuntor"
 
-use Disyuntor, threshold: 10, timeout: 5
+use Rack::Disyuntor, threshold: 10, timeout: 5
 ```
 
 This will start responding with `[503, { "Content-Type" => "text/plain", ["Service Unavailable"]]` when the circuit is open.
