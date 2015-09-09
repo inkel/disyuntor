@@ -6,7 +6,8 @@ class Disyuntor
   DEFAULTS = {
     threshold: 5,
     timeout:   10,
-    on_fail:   Proc.new { fail CircuitOpenError }
+    # callbacks
+    on_circuit_open: Proc.new { fail CircuitOpenError }
   }.freeze
 
   attr_reader :options, :failures, :last_open
@@ -32,8 +33,12 @@ class Disyuntor
     end
   end
 
-  def on_fail
-    @options[:on_fail].()
+  def on_circuit_open(&block)
+    if block_given?
+      @options[:on_circuit_open] = block
+    else
+      @options[:on_circuit_open].(self)
+    end
   end
 
   def reset!
@@ -71,13 +76,13 @@ class Disyuntor
       rescue
         @failures += 1
         trip! if @failures > @options[:threshold]
-        on_fail
+        on_circuit_open
       end
     elsif open?
       if timed_out?
         try_reset(&block)
       else
-        on_fail
+        on_circuit_open
       end
     end
   end
@@ -91,7 +96,7 @@ class Disyuntor
       end
     rescue
       trip!
-      on_fail
+      on_circuit_open
     end
   end
 end
