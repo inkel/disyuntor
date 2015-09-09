@@ -15,22 +15,24 @@ class Disyuntor
   def initialize(options={})
     @options = DEFAULTS.merge(options)
 
-    @fsm = MicroMachine.new(:closed)
-
-    @fsm.when(:trip,  :closed    => :open,   :half_open => :open)
-    @fsm.when(:reset, :half_open => :closed, :closed    => :closed)
-    @fsm.when(:try,   :open      => :half_open)
-
-    @fsm.on(:open)  do
-      @last_open = Time.now.to_i
-    end
-
-    @fsm.on(:closed) do
-      @last_open = nil
-      @failures  = 0
-    end
-
     reset!
+  end
+
+  def states
+    @states ||= MicroMachine.new(:closed).tap do |fsm|
+      fsm.when(:trip,  :half_open => :open,   :closed => :open)
+      fsm.when(:reset, :half_open => :closed, :closed => :closed)
+      fsm.when(:try,   :open      => :half_open)
+
+      fsm.on(:open) do
+        @last_open = Time.now.to_i
+      end
+
+      fsm.on(:closed) do
+        @last_open = nil
+        @failures  = 0
+      end
+    end
   end
 
   def on_circuit_open(&block)
@@ -42,19 +44,19 @@ class Disyuntor
   end
 
   def reset!
-    @fsm.trigger!(:reset)
+    states.trigger!(:reset)
   end
 
   def trip!
-    @fsm.trigger!(:trip)
+    states.trigger!(:trip)
   end
 
   def try!
-    @fsm.trigger!(:try)
+    states.trigger!(:try)
   end
 
   def state
-    @fsm.state
+    states.state
   end
 
   def closed?
