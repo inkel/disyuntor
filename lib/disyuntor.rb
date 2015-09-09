@@ -10,7 +10,7 @@ class Disyuntor
     on_circuit_open: Proc.new { fail CircuitOpenError }
   }.freeze
 
-  attr_reader :options, :failures, :last_open
+  attr_reader :options, :failures, :opened_at
 
   def initialize(options={})
     @options = DEFAULTS.merge(options)
@@ -25,11 +25,11 @@ class Disyuntor
       fsm.when(:try,   :open      => :half_open)
 
       fsm.on(:open) do
-        @last_open = Time.now.to_i
+        @opened_at = Time.now.to_i
       end
 
       fsm.on(:closed) do
-        @last_open = nil
+        @opened_at = nil
         @failures  = 0
       end
     end
@@ -70,7 +70,7 @@ class Disyuntor
   def timed_out?
     return false if closed?
 
-    Time.now.to_i > (@last_open + @options[:timeout])
+    Time.now.to_i > (@opened_at + @options[:timeout])
   end
 
   def try(&block)
