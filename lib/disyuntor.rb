@@ -49,6 +49,10 @@ class Disyuntor
     @fsm.trigger!(:trip)
   end
 
+  def try!
+    @fsm.trigger!(:try)
+  end
+
   def state
     @fsm.state
   end
@@ -68,35 +72,33 @@ class Disyuntor
   end
 
   def try(&block)
-    if closed?
-      begin
-        yield.tap do
-          reset!
-        end
-      rescue
-        @failures += 1
-        trip! if @failures > @options[:threshold]
-        on_circuit_open
-      end
-    elsif open?
-      if timed_out?
-        try_reset(&block)
-      else
-        on_circuit_open
-      end
+    try! if timed_out?
+
+    case state
+    when :closed    then on_circuit_closed(&block)
+    when :half_open then on_circuit_half_open(&block)
+    when :open      then on_circuit_open
+    else
+      fail RuntimeError, "Invalid state! #{state}"
     end
   end
 
-  def try_reset(&block)
-    @fsm.trigger!(:try)
-
-    begin
-      yield.tap do
-        reset!
-      end
-    rescue
-      trip!
-      on_circuit_open
+  def on_circuit_closed(&block)
+    block.call.tap do
+      reset!
     end
+  rescue
+    @failures += 1
+    trip! if @failures > @options[:threshold]
+    on_circuit_open
+  end
+
+  def on_circuit_half_open(&block)
+    block.call.tap do
+      reset!
+    end
+  rescue
+    trip!
+    on_circuit_open
   end
 end
