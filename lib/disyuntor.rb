@@ -13,9 +13,7 @@ class Disyuntor
   attr_reader :options, :failures, :last_open
 
   def initialize(options={})
-    @options   = DEFAULTS.merge(options)
-    @failures  = 0
-    @last_open = nil
+    @options = DEFAULTS.merge(options)
 
     @fsm = MicroMachine.new(:closed)
 
@@ -31,6 +29,8 @@ class Disyuntor
       @last_open = nil
       @failures  = 0
     end
+
+    reset!
   end
 
   def on_circuit_open(&block)
