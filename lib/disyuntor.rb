@@ -23,7 +23,7 @@ class Disyuntor
     @fsm.when(:try,   :open      => :half_open)
 
     @fsm.on(:open)  do
-      @last_open = Time.now
+      @last_open = Time.now.to_i
     end
 
     @fsm.on(:closed) do
@@ -59,7 +59,7 @@ class Disyuntor
   def timed_out?
     return false if closed?
 
-    Time.now > (@last_open + @options[:timeout])
+    Time.now.to_i > (@last_open + @options[:timeout])
   end
 
   def try(&block)
