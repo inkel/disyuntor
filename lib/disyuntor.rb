@@ -92,7 +92,7 @@ class Disyuntor
   rescue
     @failures += 1
     trip! if @failures > @options[:threshold]
-    on_circuit_open
+    raise
   end
 
   def on_circuit_half_open(&block)
@@ -101,6 +101,6 @@ class Disyuntor
     end
   rescue
     trip!
-    on_circuit_open
+    raise
   end
 end
