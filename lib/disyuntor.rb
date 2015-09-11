@@ -3,17 +3,17 @@ require "micromachine"
 class Disyuntor
   CircuitOpenError = Class.new(RuntimeError)
 
-  DEFAULTS = {
-    threshold: 5,
-    timeout:   10,
-    # callbacks
-    on_circuit_open: Proc.new { fail CircuitOpenError }
-  }.freeze
+  attr_reader :options, :failures, :opened_at, :threshold, :timeout
 
-  attr_reader :options, :failures, :opened_at
+  def initialize(threshold: 5, timeout: 10, &block)
+    @threshold = threshold
+    @timeout   = timeout
 
-  def initialize(options={})
-    @options = DEFAULTS.merge(options)
+    @on_circuit_open = if block_given?
+                         block
+                       else
+                         Proc.new{ fail CircuitOpenError }
+                       end
 
     reset!
   end
@@ -37,9 +37,9 @@ class Disyuntor
 
   def on_circuit_open(&block)
     if block_given?
-      @options[:on_circuit_open] = block
+      @on_circuit_open = block
     else
-      @options[:on_circuit_open].(self)
+      @on_circuit_open.(self)
     end
   end
 
@@ -70,7 +70,7 @@ class Disyuntor
   def timed_out?
     return false if closed?
 
-    Time.now.to_i > (@opened_at + @options[:timeout])
+    Time.now.to_i > (@opened_at + @timeout)
   end
 
   def try(&block)
@@ -89,7 +89,7 @@ class Disyuntor
     block.call
   rescue
     @failures += 1
-    trip! if @failures > @options[:threshold]
+    trip! if @failures > @threshold
     raise
   else
     reset!
