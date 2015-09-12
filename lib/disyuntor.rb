@@ -67,6 +67,10 @@ class Disyuntor
     state == :open
   end
 
+  def half_open?
+    state == :half_open
+  end
+
   def timed_out?
     return false if closed?
 
