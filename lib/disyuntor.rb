@@ -43,33 +43,15 @@ class Disyuntor
     end
   end
 
-  def close!
-    states.trigger!(:reset)
-  end
+  def close!     () states.trigger!(:reset) end
+  def open!      () states.trigger!(:trip)  end
+  def half_open! () states.trigger!(:try)   end
 
-  def open!
-    states.trigger!(:trip)
-  end
+  def state      () states.state        end
 
-  def half_open!
-    states.trigger!(:try)
-  end
-
-  def state
-    states.state
-  end
-
-  def closed?
-    state == :closed
-  end
-
-  def open?
-    state == :open
-  end
-
-  def half_open?
-    state == :half_open
-  end
+  def closed?    () state == :closed    end
+  def open?      () state == :open      end
+  def half_open? () state == :half_open end
 
   def timed_out?
     return false if closed?
