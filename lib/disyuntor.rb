@@ -15,7 +15,7 @@ class Disyuntor
                          Proc.new{ fail CircuitOpenError }
                        end
 
-    reset!
+    close!
   end
 
   def states
@@ -43,15 +43,15 @@ class Disyuntor
     end
   end
 
-  def reset!
+  def close!
     states.trigger!(:reset)
   end
 
-  def trip!
+  def open!
     states.trigger!(:trip)
   end
 
-  def try!
+  def half_open!
     states.trigger!(:try)
   end
 
@@ -78,7 +78,7 @@ class Disyuntor
   end
 
   def try(&block)
-    try! if timed_out?
+    half_open! if timed_out?
 
     case
     when closed?    then on_circuit_closed(&block)
@@ -93,18 +93,18 @@ class Disyuntor
     block.call
   rescue
     @failures += 1
-    trip! if @failures > @threshold
+    open! if @failures > @threshold
     raise
   else
-    reset!
+    close!
   end
 
   def on_circuit_half_open(&block)
     block.call
   rescue
-    trip!
+    open!
     raise
   else
-    reset!
+    close!
   end
 end
