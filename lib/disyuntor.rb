@@ -80,10 +80,10 @@ class Disyuntor
   def try(&block)
     try! if timed_out?
 
-    case state
-    when :closed    then on_circuit_closed(&block)
-    when :half_open then on_circuit_half_open(&block)
-    when :open      then on_circuit_open
+    case
+    when closed?    then on_circuit_closed(&block)
+    when half_open? then on_circuit_half_open(&block)
+    when open?      then on_circuit_open
     else
       fail RuntimeError, "Invalid state! #{state}"
     end
