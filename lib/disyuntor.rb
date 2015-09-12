@@ -54,9 +54,7 @@ class Disyuntor
   def half_open? () state == :half_open end
 
   def timed_out?
-    return false if closed?
-
-    Time.now.to_i > (@opened_at + @timeout)
+    open? && Time.now.to_i > (@opened_at + @timeout)
   end
 
   def try(&block)
