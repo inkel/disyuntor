@@ -5,7 +5,7 @@ describe Disyuntor do
   let(:circuit) { Disyuntor.new }
 
   describe :new do
-    it "be closed by default" do
+    it "should be closed by default" do
       assert circuit.closed?
       refute circuit.open?
       refute circuit.half_open?
