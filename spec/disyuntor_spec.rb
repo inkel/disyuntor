@@ -4,14 +4,57 @@ require_relative "../lib/disyuntor"
 describe Disyuntor do
   let(:circuit) { Disyuntor.new }
 
+  describe :new do
+    it "be closed by default" do
+      assert circuit.closed?
+      refute circuit.open?
+      refute circuit.half_open?
+    end
+
+    it "should has no failures" do
+      assert_equal 0, circuit.failures
+    end
+
+    it "should not report #opened_at" do
+      refute circuit.opened_at
+    end
+
+    it "should set default circuit open fallback" do
+      assert_raises(Disyuntor::CircuitOpenError) do
+        circuit.on_circuit_open
+      end
+    end
+
+    it "should override defaults" do
+      circuit = Disyuntor.new(threshold: 20, timeout: 60) do
+        fail RuntimeError
+      end
+
+      assert_equal 20, circuit.threshold
+      assert_equal 60, circuit.timeout
+
+      assert_raises(RuntimeError) do
+        circuit.on_circuit_open
+      end
+    end
+  end
+
+  describe :open! do
+    it "should set #opened_at" do
+      Time.stub(:now, Time.mktime(1978, 7, 16)) do
+        circuit.open!
+      end
+
+      assert_equal Time.mktime(1978, 7, 16).to_i, circuit.opened_at
+    end
+  end
+
   describe "circuit closed" do
     before do
       circuit.close!
     end
 
     describe "success" do
-      it "should call reset"
-
       it "should not increment failures counter" do
         failures = circuit.failures
         circuit.try{ true }
