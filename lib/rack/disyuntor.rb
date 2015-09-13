@@ -5,7 +5,7 @@ class Rack::Disyuntor
   def initialize(app, options={})
     @app = app
 
-    options[:on_fail] ||= -> { circuit_open_response }
+    options[:on_circuit_open] ||= -> { circuit_open_response }
 
     @circuit_breaker = Disyuntor.new(options)
   end
