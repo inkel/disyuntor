@@ -120,8 +120,6 @@ describe Disyuntor do
           assert block_called
         end
 
-        it "should assign #opened_at"
-
         it "should trip the circuit" do
           assert circuit.open?
           refute circuit.closed?
@@ -257,8 +255,6 @@ describe Disyuntor do
       it "should trip circuit" do
         assert circuit.open?
       end
-
-      it "should update #opened_at"
     end
 
     describe "on success" do
