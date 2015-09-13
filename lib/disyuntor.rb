@@ -3,7 +3,7 @@ require "micromachine"
 class Disyuntor
   CircuitOpenError = Class.new(RuntimeError)
 
-  attr_reader :options, :failures, :opened_at, :threshold, :timeout
+  attr_reader :failures, :opened_at, :threshold, :timeout
 
   def initialize(threshold: 5, timeout: 10, &block)
     @threshold = threshold
