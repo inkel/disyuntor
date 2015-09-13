@@ -6,7 +6,7 @@ This gem implements a very simple class to deal with the Circuit Breaker Pattern
 
 ## Usage
 
-```
+```ruby
 require "disyuntor"
 
 options = {
@@ -16,9 +16,9 @@ options = {
   timeout: 5
 }
 
-cb = Disyuntor.new(threshold: 10)
+circuit_breaker = Disyuntor.new(options)
 
-res = cb.try do
+res = circuit_breaker.try do
   # …your potentially failing operation…
 end
 ```
@@ -27,7 +27,7 @@ By default, when the circuit is open, `Disyuntor#try` will fail with a `Disyunto
 
 If you want to use it as a [`Rack`](https://github.com/rack/rack) middleware, add the following in your `config.ru`:
 
-```
+```ruby
 require "rack/disyuntor"
 
 use Rack::Disyuntor, threshold: 10, timeout: 5
@@ -40,10 +40,10 @@ This will start responding with `[503, { "Content-Type" => "text/plain", ["Servi
 Every time the circuit is open, the `#on_circuit_open` method is called, passing the circuit as its argument. This allows customizing the failure mode of your circuit:
 
 ```ruby
-circuit = Disyuntor.new(threshold: 3, timeout: 5)
+circuit_breaker = Disyuntor.new(threshold: 3, timeout: 5)
 
-circuit.on_circuit_open do |c|
-  "Circuit was open at #{c.last_open}"
+circuit_breaker.on_circuit_open do |c|
+  "Circuit was open at #{c.opened_at}"
 end
 ```
 
