@@ -35,14 +35,6 @@ class Disyuntor
     end
   end
 
-  def on_circuit_open(&block)
-    if block_given?
-      @on_circuit_open = block
-    else
-      @on_circuit_open.call(self)
-    end
-  end
-
   def close!     () states.trigger!(:reset) end
   def open!      () states.trigger!(:trip)  end
   def half_open! () states.trigger!(:try)   end
@@ -88,5 +80,13 @@ class Disyuntor
   else
     close!
     ret
+  end
+
+  def on_circuit_open(&block)
+    if block_given?
+      @on_circuit_open = block
+    else
+      @on_circuit_open.(self)
+    end
   end
 end
