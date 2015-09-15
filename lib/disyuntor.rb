@@ -39,7 +39,7 @@ class Disyuntor
     if block_given?
       @on_circuit_open = block
     else
-      @on_circuit_open.(self)
+      @on_circuit_open.call(self)
     end
   end
 
