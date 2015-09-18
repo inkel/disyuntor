@@ -62,24 +62,18 @@ class Disyuntor
   end
 
   def on_circuit_closed(&block)
-    ret = block.call
+    block.call.tap { close! }
   rescue
     @failures += 1
     open! if @failures > @threshold
     raise
-  else
-    close!
-    ret
   end
 
   def on_circuit_half_open(&block)
-    ret = block.call
+    block.call.tap { close! }
   rescue
     open!
     raise
-  else
-    close!
-    ret
   end
 
   def on_circuit_open(&block)
