@@ -1,0 +1,10 @@
+language: ruby
+
+install: gem install micromachine:1.2.0
+
+rvm:
+  - "2.1"
+  - "2.2"
+  - "rbx-2"
+
+script: ruby spec/disyuntor_spec.rb
