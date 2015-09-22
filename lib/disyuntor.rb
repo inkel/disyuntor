@@ -44,7 +44,11 @@ class Disyuntor
   def half_open? () states.state == :half_open end
 
   def timed_out?
-    open? && Time.now.to_i > (@opened_at + @timeout)
+    open? && Time.now.to_i > next_timeout_at
+  end
+
+  def next_timeout_at
+    closed? ? nil : (@opened_at + @timeout)
   end
 
   def try(&block)
