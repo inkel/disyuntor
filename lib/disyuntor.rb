@@ -39,11 +39,9 @@ class Disyuntor
   def open!      () states.trigger!(:trip)  end
   def half_open! () states.trigger!(:try)   end
 
-  def state      () states.state        end
-
-  def closed?    () state == :closed    end
-  def open?      () state == :open      end
-  def half_open? () state == :half_open end
+  def closed?    () states.state == :closed    end
+  def open?      () states.state == :open      end
+  def half_open? () states.state == :half_open end
 
   def timed_out?
     open? && Time.now.to_i > (@opened_at + @timeout)
@@ -56,8 +54,6 @@ class Disyuntor
     when closed?    then on_circuit_closed(&block)
     when half_open? then on_circuit_half_open(&block)
     when open?      then on_circuit_open
-    else
-      fail RuntimeError, "Invalid state! #{state}"
     end
   end
 
