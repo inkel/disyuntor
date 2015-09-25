@@ -16,9 +16,9 @@ options = {
   timeout: 5
 }
 
-circuit_breaker = Disyuntor.new(options)
+disyuntor = Disyuntor.new(options)
 
-res = circuit_breaker.try do
+res = disyuntor.try do
   # …your potentially failing operation…
 end
 ```
@@ -40,9 +40,9 @@ This will start responding with `[503, { "Content-Type" => "text/plain", ["Servi
 Every time the circuit is open, the `#on_circuit_open` method is called, passing the circuit as its argument. This allows customizing the failure mode of your circuit:
 
 ```ruby
-circuit_breaker = Disyuntor.new(threshold: 3, timeout: 5)
+disyuntor = Disyuntor.new(threshold: 3, timeout: 5)
 
-circuit_breaker.on_circuit_open do |c|
+disyuntor.on_circuit_open do |c|
   "Circuit was open at #{c.opened_at}"
 end
 ```
