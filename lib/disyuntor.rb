@@ -9,7 +9,7 @@ class Disyuntor
     @threshold = threshold
     @timeout   = timeout
 
-    @on_circuit_open = Proc.new{ fail CircuitOpenError }
+    on_circuit_open { fail CircuitOpenError }
 
     close!
   end
@@ -53,7 +53,7 @@ class Disyuntor
     case
     when closed?    then on_circuit_closed(&block)
     when half_open? then on_circuit_half_open(&block)
-    when open?      then on_circuit_open
+    when open?      then circuit_open
     end
   end
 
@@ -79,10 +79,11 @@ class Disyuntor
   end
 
   def on_circuit_open(&block)
-    if block_given?
-      @on_circuit_open = block
-    else
-      @on_circuit_open.(self)
-    end
+    raise ArgumentError, "Must pass a block" unless block_given?
+    @on_circuit_open = block
+  end
+
+  def circuit_open
+    @on_circuit_open.call(self)
   end
 end

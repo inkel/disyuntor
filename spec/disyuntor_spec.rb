@@ -21,7 +21,7 @@ describe Disyuntor do
 
     it "should set default circuit open fallback" do
       assert_raises(Disyuntor::CircuitOpenError) do
-        circuit.on_circuit_open
+        circuit.circuit_open
       end
     end
 
