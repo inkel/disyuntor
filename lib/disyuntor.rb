@@ -51,13 +51,13 @@ class Disyuntor
     half_open! if timed_out?
 
     case
-    when closed?    then on_circuit_closed(&block)
-    when half_open? then on_circuit_half_open(&block)
+    when closed?    then circuit_closed(&block)
+    when half_open? then circuit_half_open(&block)
     when open?      then circuit_open
     end
   end
 
-  def on_circuit_closed(&block)
+  def circuit_closed(&block)
     ret = block.call
   rescue
     @failures += 1
@@ -68,7 +68,7 @@ class Disyuntor
     ret
   end
 
-  def on_circuit_half_open(&block)
+  def circuit_half_open(&block)
     ret = block.call
   rescue
     open!
