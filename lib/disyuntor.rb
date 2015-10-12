@@ -5,15 +5,11 @@ class Disyuntor
 
   attr_reader :failures, :opened_at, :threshold, :timeout
 
-  def initialize(threshold: 5, timeout: 10, &block)
+  def initialize(threshold: 5, timeout: 10)
     @threshold = threshold
     @timeout   = timeout
 
-    @on_circuit_open = if block_given?
-                         block
-                       else
-                         Proc.new{ fail CircuitOpenError }
-                       end
+    @on_circuit_open = Proc.new{ fail CircuitOpenError }
 
     close!
   end

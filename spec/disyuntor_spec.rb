@@ -26,16 +26,10 @@ describe Disyuntor do
     end
 
     it "should override defaults" do
-      circuit = Disyuntor.new(threshold: 20, timeout: 60) do
-        fail RuntimeError
-      end
+      circuit = Disyuntor.new(threshold: 20, timeout: 60)
 
       assert_equal 20, circuit.threshold
       assert_equal 60, circuit.timeout
-
-      assert_raises(RuntimeError) do
-        circuit.on_circuit_open
-      end
     end
   end
 
