@@ -47,6 +47,10 @@ class Disyuntor
     closed? ? nil : (@opened_at + @timeout)
   end
 
+  def increment_failures!
+    @failures += 1
+  end
+
   def try(&block)
     half_open! if timed_out?
 
@@ -60,8 +64,7 @@ class Disyuntor
   def circuit_closed(&block)
     ret = block.call
   rescue
-    @failures += 1
-    open! if @failures > @threshold
+    open! if increment_failures! > threshold
     raise
   else
     close!
