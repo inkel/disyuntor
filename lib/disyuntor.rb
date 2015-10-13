@@ -5,15 +5,11 @@ class Disyuntor
 
   attr_reader :failures, :opened_at, :threshold, :timeout
 
-  def initialize(threshold: 5, timeout: 10, &block)
+  def initialize(threshold: 5, timeout: 10)
     @threshold = threshold
     @timeout   = timeout
 
-    @on_circuit_open = if block_given?
-                         block
-                       else
-                         Proc.new{ fail CircuitOpenError }
-                       end
+    on_circuit_open { fail CircuitOpenError }
 
     close!
   end
@@ -55,13 +51,13 @@ class Disyuntor
     half_open! if timed_out?
 
     case
-    when closed?    then on_circuit_closed(&block)
-    when half_open? then on_circuit_half_open(&block)
-    when open?      then on_circuit_open
+    when closed?    then circuit_closed(&block)
+    when half_open? then circuit_half_open(&block)
+    when open?      then circuit_open
     end
   end
 
-  def on_circuit_closed(&block)
+  def circuit_closed(&block)
     ret = block.call
   rescue
     @failures += 1
@@ -72,7 +68,7 @@ class Disyuntor
     ret
   end
 
-  def on_circuit_half_open(&block)
+  def circuit_half_open(&block)
     ret = block.call
   rescue
     open!
@@ -83,10 +79,11 @@ class Disyuntor
   end
 
   def on_circuit_open(&block)
-    if block_given?
-      @on_circuit_open = block
-    else
-      @on_circuit_open.(self)
-    end
+    raise ArgumentError, "Must pass a block" unless block_given?
+    @on_circuit_open = block
+  end
+
+  def circuit_open
+    @on_circuit_open.call(self)
   end
 end
