@@ -74,6 +74,7 @@ class Disyuntor
   def circuit_half_open(&block)
     ret = block.call
   rescue
+    increment_failures!
     open!
     raise
   else

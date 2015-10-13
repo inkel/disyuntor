@@ -243,11 +243,16 @@ describe Disyuntor do
 
     describe "on failure" do
       before do
+        @prev_failures = circuit.failures
         circuit.try{ fail RuntimeError } rescue nil
       end
 
       it "should trip circuit" do
         assert circuit.open?
+      end
+
+      it "should increment failures" do
+        assert_equal @prev_failures.succ, circuit.failures
       end
     end
 
