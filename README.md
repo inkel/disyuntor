@@ -25,16 +25,6 @@ end
 
 By default, when the circuit is open, `Disyuntor#try` will fail with a `Disyuntor::CircuitOpenError`. This behavior can be changed by passing a `Proc` in the `on_circuit_open` option or method.
 
-If you want to use it as a [`Rack`](https://github.com/rack/rack) middleware, add the following in your `config.ru`:
-
-```ruby
-require "rack/disyuntor"
-
-use Rack::Disyuntor, threshold: 10, timeout: 5
-```
-
-This will start responding with `[503, { "Content-Type" => "text/plain", ["Service Unavailable"]]` when the circuit is open.
-
 ## Custom actions when circuit is open
 
 Every time the circuit is open, the `#on_circuit_open` method is called, passing the circuit as its argument. This allows customizing the failure mode of your circuit:
