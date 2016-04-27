@@ -1,5 +1,3 @@
-require "micromachine"
-
 class Disyuntor
   CircuitOpenError = Class.new(RuntimeError)
 
@@ -15,8 +13,6 @@ class Disyuntor
   end
 
   def try(&block)
-    half_open! if timed_out?
-
     case
     when closed?    then circuit_closed(&block)
     when half_open? then circuit_half_open(&block)
@@ -29,35 +25,28 @@ class Disyuntor
     @on_circuit_open = block
   end
 
-  def closed?    () states.state == :closed    end
+  def closed?() state == :closed end
 
   private
 
-  attr_reader :opened_at
+  attr_reader :opened_at, :state
 
-  def states
-    @states ||= MicroMachine.new(:closed).tap do |fsm|
-      fsm.when(:trip,  :half_open => :open,   :closed => :open)
-      fsm.when(:reset, :half_open => :closed, :closed => :closed)
-      fsm.when(:try,   :open      => :half_open)
-
-      fsm.on(:open) do
-        @opened_at = Time.now.to_i
-      end
-
-      fsm.on(:closed) do
-        @opened_at = nil
-        @failures  = 0
-      end
-    end
+  def close!
+    @opened_at = nil
+    @failures  = 0
+    @state     = :closed
   end
 
-  def close!     () states.trigger!(:reset) end
-  def open!      () states.trigger!(:trip)  end
-  def half_open! () states.trigger!(:try)   end
+  def open!
+    @opened_at = Time.now.to_i
+    @state     = :open
+  end
 
-  def open?      () states.state == :open      end
-  def half_open? () states.state == :half_open end
+  def open?() state == :open end
+
+  def half_open?
+    open? && timed_out?
+  end
 
   def timed_out?
     open? && Time.now.to_i > next_timeout_at
