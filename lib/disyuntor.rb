@@ -64,7 +64,7 @@ class Disyuntor
   end
 
   def next_timeout_at
-    closed? ? nil : (@opened_at + @timeout)
+    opened_at + timeout
   end
 
   def increment_failures!
