@@ -13,10 +13,10 @@ class Disyuntor
   end
 
   def try(&block)
-    case
-    when closed?    then circuit_closed(&block)
-    when half_open? then circuit_half_open(&block)
-    when open?      then circuit_open
+    if closed? or timed_out?
+      circuit_closed(&block)
+    else
+      circuit_open
     end
   end
 
@@ -44,10 +44,6 @@ class Disyuntor
 
   def open?() state == :open end
 
-  def half_open?
-    open? && timed_out?
-  end
-
   def timed_out?
     open? && Time.now.to_i > next_timeout_at
   end
@@ -69,8 +65,6 @@ class Disyuntor
     close!
     ret
   end
-
-  alias_method :circuit_half_open, :circuit_closed
 
   def circuit_open
     @on_circuit_open.call(self)
