@@ -3,7 +3,7 @@ require "micromachine"
 class Disyuntor
   CircuitOpenError = Class.new(RuntimeError)
 
-  attr_reader :failures, :opened_at, :threshold, :timeout
+  attr_reader :failures, :threshold, :timeout
 
   def initialize(threshold:, timeout:)
     @threshold = threshold
@@ -13,6 +13,27 @@ class Disyuntor
 
     close!
   end
+
+  def try(&block)
+    half_open! if timed_out?
+
+    case
+    when closed?    then circuit_closed(&block)
+    when half_open? then circuit_half_open(&block)
+    when open?      then circuit_open
+    end
+  end
+
+  def on_circuit_open(&block)
+    raise ArgumentError, "Must pass a block" unless block_given?
+    @on_circuit_open = block
+  end
+
+  def closed?    () states.state == :closed    end
+
+  private
+
+  attr_reader :opened_at
 
   def states
     @states ||= MicroMachine.new(:closed).tap do |fsm|
@@ -35,7 +56,6 @@ class Disyuntor
   def open!      () states.trigger!(:trip)  end
   def half_open! () states.trigger!(:try)   end
 
-  def closed?    () states.state == :closed    end
   def open?      () states.state == :open      end
   def half_open? () states.state == :half_open end
 
@@ -49,16 +69,6 @@ class Disyuntor
 
   def increment_failures!
     @failures += 1
-  end
-
-  def try(&block)
-    half_open! if timed_out?
-
-    case
-    when closed?    then circuit_closed(&block)
-    when half_open? then circuit_half_open(&block)
-    when open?      then circuit_open
-    end
   end
 
   def circuit_closed(&block)
@@ -80,11 +90,6 @@ class Disyuntor
   else
     close!
     ret
-  end
-
-  def on_circuit_open(&block)
-    raise ArgumentError, "Must pass a block" unless block_given?
-    @on_circuit_open = block
   end
 
   def circuit_open
