@@ -81,16 +81,7 @@ class Disyuntor
     ret
   end
 
-  def circuit_half_open(&block)
-    ret = block.call
-  rescue
-    increment_failures!
-    open!
-    raise
-  else
-    close!
-    ret
-  end
+  alias_method :circuit_half_open, :circuit_closed
 
   def circuit_open
     @on_circuit_open.call(self)
