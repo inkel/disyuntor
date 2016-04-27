@@ -64,7 +64,7 @@ class Disyuntor
   def circuit_closed(&block)
     ret = block.call
   rescue
-    open! if increment_failures! > threshold
+    open! if increment_failures! >= threshold
     raise
   else
     close!
