@@ -5,7 +5,7 @@ class Disyuntor
 
   attr_reader :failures, :opened_at, :threshold, :timeout
 
-  def initialize(threshold: 5, timeout: 10)
+  def initialize(threshold:, timeout:)
     @threshold = threshold
     @timeout   = timeout
 
