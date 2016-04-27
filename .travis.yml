@@ -5,6 +5,5 @@ install: gem install minitest:5.8.4
 rvm:
   - "2.1"
   - "2.2"
-  - "rbx-2"
 
 script: ruby test/disyuntor_test.rb -v
