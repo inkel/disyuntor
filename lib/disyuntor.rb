@@ -25,7 +25,9 @@ class Disyuntor
     @on_circuit_open = block
   end
 
-  def closed?() state == :closed end
+  def closed?
+    state == :closed
+  end
 
   private
 
@@ -42,7 +44,9 @@ class Disyuntor
     @state     = :open
   end
 
-  def open?() state == :open end
+  def open?
+    state == :open
+  end
 
   def timed_out?
     open? && Time.now.to_i > next_timeout_at
