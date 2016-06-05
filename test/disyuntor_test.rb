@@ -74,6 +74,10 @@ class DisyuntorTest < Minitest::Test
     end
   end
 
+  def after_timeout(breaker, &block)
+    Time.stub(:now, Time.at(Time.now.to_i + breaker.timeout + 1), &block)
+  end
+
   def test_open_circuit_after_threshold_failures
     @disyuntor.threshold.times do
       begin
@@ -125,7 +129,7 @@ class DisyuntorTest < Minitest::Test
 
     refute @disyuntor.closed?
 
-    Time.stub(:now, Time.at(Time.now.to_i + @timeout + 1)) do
+    after_timeout(@disyuntor) do
       assert_equal 42, @disyuntor.try { 42 }
     end
 
@@ -137,7 +141,7 @@ class DisyuntorTest < Minitest::Test
 
     refute @disyuntor.closed?
 
-    Time.stub(:now, Time.at(Time.now.to_i + @timeout + 1)) do
+    after_timeout(@disyuntor) do
       assert_raises(CustomRuntimeError) do
         @disyuntor.try { fail CustomRuntimeError }
       end
@@ -151,7 +155,7 @@ class DisyuntorTest < Minitest::Test
 
     refute @disyuntor.closed?
 
-    Time.stub(:now, Time.at(Time.now.to_i + @timeout + 1)) do
+    after_timeout(@disyuntor) do
       assert_raises(CustomRuntimeError) do
         @disyuntor.try { fail CustomRuntimeError }
       end
@@ -165,7 +169,7 @@ class DisyuntorTest < Minitest::Test
 
     refute @disyuntor.closed?
 
-    Time.stub(:now, Time.at(Time.now.to_i + @timeout + 1)) do
+    after_timeout(@disyuntor) do
       assert_equal 42, @disyuntor.try { 42 }
     end
 
@@ -175,7 +179,7 @@ class DisyuntorTest < Minitest::Test
   def test_do_not_report_open_when_timed_out
     make_open(@disyuntor)
 
-    Time.stub(:now, Time.at(Time.now.to_i + @timeout + 1)) do
+    after_timeout(@disyuntor) do
       refute @disyuntor.open?
     end
   end
