@@ -29,6 +29,10 @@ class Disyuntor
     state == :closed
   end
 
+  def open?
+    not (closed? or timed_out?)
+  end
+
   private
 
   attr_reader :opened_at, :state
@@ -44,12 +48,8 @@ class Disyuntor
     @state     = :open
   end
 
-  def open?
-    state == :open
-  end
-
   def timed_out?
-    open? && Time.now.to_i > next_timeout_at
+    Time.now.to_i > next_timeout_at
   end
 
   def next_timeout_at

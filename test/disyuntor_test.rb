@@ -202,4 +202,17 @@ class DisyuntorTest < Minitest::Test
 
     assert @disyuntor.closed?
   end
+
+  def test_do_not_report_open_when_timed_out
+    @disyuntor.threshold.times do
+      begin
+        @disyuntor.try { fail CustomRuntimeError }
+      rescue CustomRuntimeError
+      end
+    end
+
+    Time.stub(:now, Time.at(Time.now.to_i + @timeout + 1)) do
+      refute @disyuntor.open?
+    end
+  end
 end
