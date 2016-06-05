@@ -65,6 +65,15 @@ class DisyuntorTest < Minitest::Test
     assert_equal 0, @disyuntor.failures
   end
 
+  def make_open(breaker)
+    breaker.threshold.times do
+      begin
+        breaker.try { fail CustomRuntimeError }
+      rescue CustomRuntimeError
+      end
+    end
+  end
+
   def test_open_circuit_after_threshold_failures
     @disyuntor.threshold.times do
       begin
@@ -77,12 +86,7 @@ class DisyuntorTest < Minitest::Test
   end
 
   def test_open_circuit_raises_default_error
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     assert_raises(Disyuntor::CircuitOpenError) do
       @disyuntor.try { fail CustomRuntimeError }
@@ -92,12 +96,7 @@ class DisyuntorTest < Minitest::Test
   def test_override_on_circuit_open
     @disyuntor.on_circuit_open { 42 }
 
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     assert_equal 42, @disyuntor.try { fail CustomRuntimeError }
   end
@@ -105,23 +104,13 @@ class DisyuntorTest < Minitest::Test
   def test_count_failures
     assert_equal 0, @disyuntor.failures
 
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     assert_equal @threshold, @disyuntor.failures
   end
 
   def test_do_not_count_failures_when_open
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     begin
       @disyuntor.try { fail CustomRuntimeError }
@@ -132,12 +121,7 @@ class DisyuntorTest < Minitest::Test
   end
 
   def test_close_after_timeout_if_success
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     refute @disyuntor.closed?
 
@@ -149,12 +133,7 @@ class DisyuntorTest < Minitest::Test
   end
 
   def test_reopen_after_timeout_if_fails
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     refute @disyuntor.closed?
 
@@ -168,12 +147,7 @@ class DisyuntorTest < Minitest::Test
   end
 
   def test_count_failure_after_timeout_if_fails
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     refute @disyuntor.closed?
 
@@ -187,12 +161,7 @@ class DisyuntorTest < Minitest::Test
   end
 
   def test_close_after_timeout_if_succeeds
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     refute @disyuntor.closed?
 
@@ -204,12 +173,7 @@ class DisyuntorTest < Minitest::Test
   end
 
   def test_do_not_report_open_when_timed_out
-    @disyuntor.threshold.times do
-      begin
-        @disyuntor.try { fail CustomRuntimeError }
-      rescue CustomRuntimeError
-      end
-    end
+    make_open(@disyuntor)
 
     Time.stub(:now, Time.at(Time.now.to_i + @timeout + 1)) do
       refute @disyuntor.open?
