@@ -13,7 +13,10 @@ class Disyuntor
   end
 
   def try(&block)
-    if closed? or timed_out?
+    if closed?
+      circuit_closed(&block)
+    elsif timed_out?
+      open!
       circuit_closed(&block)
     else
       circuit_open
