@@ -164,6 +164,33 @@ class DisyuntorTest < Minitest::Test
     assert_equal @threshold.next, @disyuntor.failures
   end
 
+  def test_single_trial_after_timeout
+    make_open(@disyuntor)
+
+    refute @disyuntor.closed?
+
+    after_timeout(@disyuntor) do
+      trial = Fiber.new do
+        @disyuntor.try { Fiber.yield }
+      end
+
+      # Start the trial
+      trial.resume
+
+      # While the trial is in progress the circuit should remain open
+      assert @disyuntor.open?
+      assert_raises(Disyuntor::CircuitOpenError) do
+        @disyuntor.try { 24 }
+      end
+
+      # Let the trial fiber succeed
+      trial.resume 42
+
+      # After the trial succeeds the circuit should be closed.
+      assert @disyuntor.closed?
+    end
+  end
+
   def test_close_after_timeout_if_succeeds
     make_open(@disyuntor)
 
